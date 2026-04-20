@@ -61,7 +61,7 @@
         box.className = "box";
 
         box.innerHTML = `
-          <div class="title">${name}</div>
+          <div class="title">${name.replace("%20", " ")}</div>
             <div class="desc">${details.sizeConverted}</div>
         `;
 

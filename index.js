@@ -2,15 +2,28 @@ const http = require("http");
 const fs = require("fs");
 const path = require('path')
 
-const download_folder_path = "download" // path of which folder to use
-const PORT = 80 // port on which to serve
+const download_folder_path = "fileTransScriptFiles" // path of which folder to use
+const PORT = 80 // port on which to serve0
 
+function checkDirExists() {
+  try {
+    const dir = fs.mkdirSync(download_folder_path, { recursive: true })
+    if (dir) {
+      console.log(`Created download folder for ${download_folder_path}`)
+    }
+  } catch (e) {
+    console.log("Unexpected error occured when creating the file", e)
+  }
+}
+
+checkDirExists()
 const server = http.createServer((req, res) => {
+  checkDirExists()
   const files = fs.readdirSync(download_folder_path)
   const filesObject = Object.fromEntries(
     files.map(file => {
       const details = fs.statSync(path.join(download_folder_path, file))
-      return [file, {
+      return [encodeURI(file), {
         size: details.size,
         sizeConverted: sizeConverted(details.size)
       }]
@@ -60,7 +73,9 @@ const server = http.createServer((req, res) => {
 
 function handleDownloadFile(req, res) {
   const files = fs.readdirSync(download_folder_path)
-  const fileName = req.url.replace(/^\/download\//g, "")
+  const fileName = req.url.replace(/^\/download\//g, "").replace("%20", " ")
+
+  console.log(fileName)
 
   if (files.includes(fileName)) {
 
@@ -94,6 +109,8 @@ function handleHTML(req, res) {
 }
 
 function sizeConverted(size) { // stolen function
+
+  if (size == 0) return "0 Bytes"
 
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
